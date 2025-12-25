@@ -1,0 +1,238 @@
+* {
+  margin: 0;
+  padding: 0;
+  box-sizing: border-box;
+  font-family: "Inter", sans-serif;
+}
+
+body {
+  background: #f6f6f8;
+  color: #0f172a;
+  padding-bottom: 120px;
+}
+
+/* HEADER */
+.top-bar {
+  position: sticky;
+  top: 0;
+  background: #fff;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 14px;
+  border-bottom: 1px solid #e5e7eb;
+}
+
+.top-bar h1 {
+  font-size: 18px;
+  font-weight: 700;
+}
+
+.icon-btn {
+  background: none;
+  border: none;
+  cursor: pointer;
+}
+
+/* LAYOUT */
+.container {
+  max-width: 420px;
+  margin: auto;
+  padding: 16px;
+}
+
+/* SUMMARY */
+.summary-card {
+  position: relative;
+  height: 160px;
+  border-radius: 16px;
+  background: url("https://lh3.googleusercontent.com/aida-public/AB6AXuAdEniDKfkCAVzA6ni8xqUpu_DRNo48NNzaam5CMXDeOMSn56vo1sskBkjYsZ-TNT8wtiQjEVRRxxG1Lm0u2l6saMbHFClzaxmS6x3z4tV5pZ-v3EhvapqZQp4FE0h9WYcumM5ZX5qH9JiVna9vHyPcAUNCvsYj-TMl0Jx8Lwtw6Kh8fZvHo4hFhf1GQTXXFsPLHxieI2bUsHWNKrlDRB-xHaxqrVjT8Qad68d-NFBy9E8knvDGdXQ8hrvD5boWA3w38A9InwkcTUQ")
+    center/cover;
+  color: #fff;
+  overflow: hidden;
+}
+
+.summary-overlay {
+  position: absolute;
+  inset: 0;
+  background: linear-gradient(to top, #111827, transparent);
+}
+
+.summary-actions {
+  position: absolute;
+  top: 12px;
+  right: 12px;
+  display: flex;
+  gap: 8px;
+}
+
+.pill {
+  border-radius: 999px;
+  padding: 6px 10px;
+  font-size: 12px;
+  border: 1px solid;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  gap: 4px;
+}
+
+.reject { background: rgba(239,68,68,.2); border-color:#ef4444; color:#fff }
+.approve { background: rgba(34,197,94,.2); border-color:#22c55e; color:#fff }
+
+.summary-info {
+  position: absolute;
+  bottom: 14px;
+  left: 14px;
+  right: 14px;
+  display: flex;
+  justify-content: space-between;
+  align-items: flex-end;
+}
+
+.summary-info h2 {
+  font-size: 28px;
+}
+
+/* SECTION */
+.section {
+  margin-top: 24px;
+}
+
+.section-header {
+  display: flex;
+  justify-content: space-between;
+  margin-bottom: 10px;
+}
+
+.link-btn {
+  background: none;
+  border: none;
+  color: #135bec;
+  font-weight: 600;
+  cursor: pointer;
+}
+
+/* SEARCH */
+.search {
+  width: 100%;
+  padding: 12px;
+  border-radius: 12px;
+  border: 1px solid #e5e7eb;
+  margin-bottom: 12px;
+}
+
+/* LIST */
+.list {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+}
+
+.item {
+  background: #fff;
+  padding: 14px;
+  border-radius: 14px;
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  border: 1px solid #e5e7eb;
+}
+
+.icon {
+  width: 40px;
+  height: 40px;
+  border-radius: 50%;
+  display: grid;
+  place-items: center;
+}
+
+.blue { background:#dbeafe; color:#2563eb }
+.orange { background:#ffedd5; color:#ea580c }
+
+.item-info {
+  flex: 1;
+}
+
+.item-info span {
+  font-size: 12px;
+  color: #64748b;
+}
+
+.actions {
+  display: flex;
+  gap: 6px;
+}
+
+.circle {
+  width: 34px;
+  height: 34px;
+  border-radius: 50%;
+  border: none;
+  cursor: pointer;
+}
+
+.circle.red { background:#fee2e2; color:#dc2626 }
+.circle.green { background:#dcfce7; color:#16a34a }
+
+/* FORM */
+.card {
+  background: #fff;
+  padding: 16px;
+  border-radius: 14px;
+  border: 1px solid #e5e7eb;
+}
+
+.card label {
+  font-size: 14px;
+  margin-bottom: 4px;
+  display: block;
+}
+
+.card input,
+.card select {
+  width: 100%;
+  padding: 12px;
+  margin-bottom: 12px;
+  border-radius: 10px;
+  border: 1px solid #e5e7eb;
+}
+
+.row {
+  display: flex;
+  gap: 10px;
+}
+
+.dashed-btn {
+  border: 2px dashed #93c5fd;
+  background: none;
+  padding: 12px;
+  border-radius: 12px;
+  cursor: pointer;
+  color: #135bec;
+  font-weight: 600;
+}
+
+/* FOOTER */
+.bottom-bar {
+  position: fixed;
+  bottom: 0;
+  left: 0;
+  right: 0;
+  background: #fff;
+  padding: 14px;
+  border-top: 1px solid #e5e7eb;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+}
+
+.primary-btn {
+  background: #135bec;
+  color: #fff;
+  border: none;
+  padding: 12px 18px;
+  border-radius: 12px;
+  font-weight: 700;
+  cursor: pointer;
+}
