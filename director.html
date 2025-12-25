@@ -1,0 +1,454 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>Director: Balances & Approvals</title>
+
+  <!-- Google Fonts -->
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+  <link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined" rel="stylesheet">
+
+  <link rel="stylesheet" href="director.css">
+</head>
+
+<body>
+
+<!-- HEADER -->
+<header class="top-bar">
+  <button class="icon-btn">
+    <span class="material-symbols-outlined">arrow_back</span>
+  </button>
+
+  <h1>Director: Balances & Approvals</h1>
+
+  <button class="icon-btn">
+    <span class="material-symbols-outlined">calendar_month</span>
+  </button>
+</header>
+
+<main class="container">
+
+  <!-- SUMMARY CARD -->
+  <section class="summary-card">
+    <div class="summary-overlay"></div>
+
+    <div class="summary-actions">
+      <button class="pill reject">
+        <span class="material-symbols-outlined">close</span> Reject
+      </button>
+      <button class="pill approve">
+        <span class="material-symbols-outlined">check</span> Approve
+      </button>
+    </div>
+
+    <div class="summary-info">
+      <div>
+        <p>Total Received from Manager</p>
+        <h2 id="total-received">₦12,450.00</h2>
+      </div>
+      <div class="trend">
+        <span class="material-symbols-outlined">trending_up</span> +12%
+      </div>
+      <div class="bank-balance">
+        <p>Bank Balance</p>
+        <h3 id="bank-balance">₦0.00</h3>
+      </div>
+    </div>
+  </section>
+
+  <!-- MANAGER REPORT -->
+  <section class="section">
+    <div class="section-header">
+      <h3>Manager Report</h3>
+      <button class="link-btn">Approve All</button>
+    </div>
+
+    <input class="search" placeholder="Search items..." />
+
+    <div class="list" id="manager-list">
+      <!-- Manager items will be populated here from manager's saved record -->
+      <div class="empty">No manager records for today.</div>
+    </div>
+  </section>
+
+  <!-- EXPENSE FORM -->
+  <section class="section">
+    <h3>My Expenses</h3>
+
+    <form class="card" id="director-expenses">
+      <div class="row">
+        <div>
+          <label>Rolls Purchase</label>
+          <input type="number" placeholder="0.00" id="rolls-purchase">
+        </div>
+        <div>
+          <label>Staff Salary</label>
+          <input type="number" placeholder="0.00" id="staff-salary">
+        </div>
+      </div>
+
+      <div class="row">
+        <div>
+          <label>Vehicle Repair</label>
+          <input type="number" placeholder="0.00" id="vehicle-repair">
+        </div>
+        <div>
+          <label>Other Operational</label>
+          <input type="number" placeholder="0.00" id="other-operational">
+        </div>
+      </div>
+
+      <div class="row">
+        <div style="width:100%">
+          <label>Notes (Optional)</label>
+          <input type="text" placeholder="Details..." id="expenses-note">
+        </div>
+      </div>
+
+      <div style="display:flex;gap:12px;margin-top:12px;">
+        <button class="dashed-btn" type="button" id="save-director-expenses">
+          <span class="material-symbols-outlined">save</span>
+          Save Expenses
+        </button>
+        <button class="dashed-btn" type="button" id="clear-director-expenses">
+          <span class="material-symbols-outlined">delete</span>
+          Clear
+        </button>
+      </div>
+    </form>
+  </section>
+
+</main>
+
+<!-- FOOTER -->
+    <footer class="bottom-bar">
+  <div>
+    <span>Net Balance</span>
+    <strong id="net-balance">₦0.00</strong>
+  </div>
+
+  <button class="primary-btn">
+    <span class="material-symbols-outlined">check_circle</span>
+    Submit Review
+  </button>
+</footer>
+
+<script>
+(function(){
+  function parseNum(v){ const n = parseFloat(v); return isNaN(n)?0:n; }
+  const date = new Date().toISOString().slice(0,10);
+  const raw = localStorage.getItem('records:' + date);
+  const listEl = document.getElementById('manager-list');
+  const totalEl = document.getElementById('total-received');
+  if(!listEl || !totalEl) return;
+  if(!raw){
+    listEl.innerHTML = '<div class="empty">No manager records for ' + date + '.</div>';
+    return;
+  }
+  try{
+    const data = JSON.parse(raw);
+    const vehFuel = (data.expenditure && data.expenditure.vehFuel) || [];
+    const vehOil = (data.expenditure && data.expenditure.vehOil) || [];
+    const vehRep = (data.expenditure && data.expenditure.vehRepairs) || [];
+    const gen = parseNum(data.expenditure && data.expenditure.generatorFuel);
+    const sal = parseNum(data.expenditure && data.expenditure.salary);
+    const miscAmount = parseNum(data.expenditure && data.expenditure.miscAmount);
+
+    const salesAmt = (data.sales && data.sales.salesAmount) || [];
+    const distBags = (data.sales && data.sales.distBags) || [];
+    const distRate = (data.sales && data.sales.distRate) || [];
+    const indAmt = (data.sales && data.sales.indAmount) || [];
+
+    const items = [];
+    for(let i=0;i<salesAmt.length;i++){
+      const a = parseNum(salesAmt[i]); if(a!==0) items.push({title: 'Vehicle ' + (i+1) + ' Sales', amount: a, positive: true});
+    }
+    for(let i=0;i<Math.max(distBags.length, distRate.length); i++){
+      const b = parseNum(distBags[i]); const r = parseNum(distRate[i]); const amt = b * r;
+      if(amt!==0) items.push({title: 'Distributor ' + (i+1), amount: amt, positive: true});
+    }
+    for(let i=0;i<indAmt.length;i++){
+      const a = parseNum(indAmt[i]); if(a!==0) items.push({title: 'Individuals ' + (i+1), amount: a, positive: true});
+    }
+
+    for(let i=0;i<Math.max(vehFuel.length, vehOil.length, vehRep.length); i++){
+      const f = parseNum(vehFuel[i]); const o = parseNum(vehOil[i]); const r = parseNum(vehRep[i]);
+      if(f!==0) items.push({title: 'Vehicle ' + (i+1) + ' Fuel', amount: -f, positive: false});
+      if(o!==0) items.push({title: 'Vehicle ' + (i+1) + ' Oil', amount: -o, positive: false});
+      if(r!==0) items.push({title: 'Vehicle ' + (i+1) + ' Repairs', amount: -r, positive: false});
+    }
+    if(gen!==0) items.push({title:'Generator Fuel', amount: -gen, positive:false});
+    if(sal!==0) items.push({title:'Salary', amount: -sal, positive:false});
+    if(miscAmount!==0) items.push({title:'Miscellaneous', amount: -miscAmount, positive:false});
+
+    const salesTotal = items.filter(it=>it.positive).reduce((s,it)=> s + it.amount, 0);
+    const expTotal = items.filter(it=>!it.positive).reduce((s,it)=> s + Math.abs(it.amount), 0);
+
+    // Total received from manager should be manager's total sales
+    totalEl.textContent = '₦' + salesTotal.toFixed(2);
+
+    // function to recalc net balance (manager sales - director expenses)
+    function recalcNet(){
+      const rolls = parseNum((document.getElementById('rolls-purchase')||{value:''}).value);
+      const salary = parseNum((document.getElementById('staff-salary')||{value:''}).value);
+      const vehicle = parseNum((document.getElementById('vehicle-repair')||{value:''}).value);
+      const other = parseNum((document.getElementById('other-operational')||{value:''}).value);
+      const dirExpSum = rolls + salary + vehicle + other;
+      const net = salesTotal - dirExpSum;
+      const netEl = document.getElementById('net-balance');
+      if(netEl) netEl.textContent = '₦' + net.toFixed(2);
+      return {net, dirExpSum, salesTotal};
+    }
+
+    // expose for other scripts
+    window.recalcNetDirector = recalcNet;
+    // initialize bank so it starts today and only accumulates new days
+    function ensureBankInitialized(forDate){
+      try{
+        const start = localStorage.getItem('bank:startDate');
+        if(start) return;
+        // compute net for forDate (may be zero)
+        const key = 'records:' + forDate;
+        const raw = localStorage.getItem(key);
+        let salesTotal = 0; let dirExpSum = 0;
+        if(raw){
+          const d = JSON.parse(raw);
+          const salesAmt = (d.sales && d.sales.salesAmount) || [];
+          const distBags = (d.sales && d.sales.distBags) || [];
+          const distRate = (d.sales && d.sales.distRate) || [];
+          const indAmt = (d.sales && d.sales.indAmount) || [];
+          salesTotal += salesAmt.reduce((s,x)=> s + parseNum(x), 0);
+          for(let j=0;j<Math.max(distBags.length, distRate.length); j++) salesTotal += parseNum(distBags[j]) * parseNum(distRate[j]);
+          salesTotal += indAmt.reduce((s,x)=> s + parseNum(x), 0);
+
+          const exp = d.expenditure || {};
+          dirExpSum = parseNum(exp.rollsPurchase) + parseNum(exp.salary) + parseNum(exp.vehicleRepair) + parseNum(exp.otherOperational);
+          // mark this record as included
+          d.expenditure = d.expenditure || {};
+          d.expenditure.__bankIncluded = true;
+          localStorage.setItem(key, JSON.stringify(d));
+        }
+        localStorage.setItem('bank:startDate', forDate);
+        localStorage.setItem('bank:running', String(salesTotal - dirExpSum));
+      }catch(e){ console.error('ensureBankInitialized failed', e); }
+    }
+
+    // add a specific date's net to running bank if not already included and date >= start
+    function addDateNetToBank(forDate){
+      try{
+        const key = 'records:' + forDate;
+        const raw = localStorage.getItem(key);
+        if(!raw) return;
+        const d = JSON.parse(raw);
+        d.expenditure = d.expenditure || {};
+        if(d.expenditure.__bankIncluded) return; // already counted
+        const start = localStorage.getItem('bank:startDate');
+        if(!start){
+          // initialize starting from this date
+          ensureBankInitialized(forDate);
+          return;
+        }
+        if(forDate < start) return; // only accumulate from startDate forward
+
+        const salesAmt = (d.sales && d.sales.salesAmount) || [];
+        const distBags = (d.sales && d.sales.distBags) || [];
+        const distRate = (d.sales && d.sales.distRate) || [];
+        const indAmt = (d.sales && d.sales.indAmount) || [];
+        let salesTotal = 0;
+        salesTotal += salesAmt.reduce((s,x)=> s + parseNum(x), 0);
+        for(let j=0;j<Math.max(distBags.length, distRate.length); j++) salesTotal += parseNum(distBags[j]) * parseNum(distRate[j]);
+        salesTotal += indAmt.reduce((s,x)=> s + parseNum(x), 0);
+
+        const exp = d.expenditure || {};
+        const dirExpSum = parseNum(exp.rollsPurchase) + parseNum(exp.salary) + parseNum(exp.vehicleRepair) + parseNum(exp.otherOperational);
+        const net = salesTotal - dirExpSum;
+
+        let running = parseFloat(localStorage.getItem('bank:running') || '0');
+        running += net;
+        localStorage.setItem('bank:running', String(running));
+        d.expenditure.__bankIncluded = true;
+        localStorage.setItem(key, JSON.stringify(d));
+      }catch(e){ console.error('addDateNetToBank failed', e); }
+    }
+
+    function computeBankBalance(){
+      try{
+        const running = parseFloat(localStorage.getItem('bank:running') || '0');
+        const bankEl = document.getElementById('bank-balance'); if(bankEl) bankEl.textContent = '₦' + running.toFixed(2);
+        return running;
+      }catch(e){ console.error('computeBankBalance failed', e); return 0; }
+    }
+    window.computeBankBalance = computeBankBalance;
+
+    // attach input listeners so director inputs update net live
+    ['rolls-purchase','staff-salary','vehicle-repair','other-operational'].forEach(id=>{
+      const el = document.getElementById(id); if(el) el.addEventListener('input', recalcNet);
+    });
+
+    // respond to storage changes (e.g., manager saved in another tab)
+    window.addEventListener('storage', function(e){ if(e.key && e.key.startsWith('records:')){
+      // reload page-level sales total by re-reading localStorage and calling recalc
+      try{
+        const newRaw = localStorage.getItem('records:' + date);
+        if(!newRaw) return;
+        const newData = JSON.parse(newRaw);
+        // recompute salesTotal from newData
+        const newVehicleSales = (newData.sales && newData.sales.salesAmount) || [];
+        const newDistBags = (newData.sales && newData.sales.distBags) || [];
+        const newDistRate = (newData.sales && newData.sales.distRate) || [];
+        const newInd = (newData.sales && newData.sales.indAmount) || [];
+        let newSalesTotal = 0;
+        newSalesTotal += newVehicleSales.reduce((s,x)=> s + parseNum(x), 0);
+        for(let i=0;i<Math.max(newDistBags.length, newDistRate.length); i++) newSalesTotal += parseNum(newDistBags[i]) * parseNum(newDistRate[i]);
+        newSalesTotal += newInd.reduce((s,x)=> s + parseNum(x), 0);
+        totalEl.textContent = '₦' + newSalesTotal.toFixed(2);
+        // ensure bank is updated if manager saved a new record for this date
+        try{ addDateNetToBank(date); }catch(e){}
+        // update items listing quickly by reloading page (simple strategy)
+        location.reload();
+      }catch(e){}
+    }});
+
+    if(items.length===0){
+      listEl.innerHTML = '<div class="empty">No transactions recorded for ' + date + '.</div>';
+      try{ ensureBankInitialized(date); if(window.computeBankBalance) window.computeBankBalance(); }catch(e){}
+    } else {
+      listEl.innerHTML = items.map(it => {
+        const sign = it.amount>=0 ? '+' : '-';
+        const cls = it.amount>=0 ? 'green' : '';
+        return '<div class="item">' +
+          '<div class="icon ' + (it.amount>=0 ? 'blue' : 'orange') + '">' +
+            '<span class="material-symbols-outlined">' + (it.amount>=0 ? 'attach_money' : 'inventory_2') + '</span>' +
+          '</div>' +
+          '<div class="item-info"><h4>' + it.title + '</h4><span>' + date + '</span></div>' +
+          '<strong class="' + cls + '">' + sign + '₦' + Math.abs(it.amount).toFixed(2) + '</strong>' +
+          '<div class="actions">' +
+            '<button class="circle red"><span class="material-symbols-outlined">close</span></button>' +
+            '<button class="circle green"><span class="material-symbols-outlined">check</span></button>' +
+          '</div>' +
+        '</div>';
+        }).join('\n');
+      // attach approve/reject handlers
+      Array.from(listEl.querySelectorAll('.item')).forEach(itemEl=>{
+        const approveBtn = itemEl.querySelector('.circle.green');
+        const rejectBtn = itemEl.querySelector('.circle.red');
+        approveBtn && approveBtn.addEventListener('click', function(){
+          itemEl.classList.remove('rejected'); itemEl.classList.add('approved');
+          approveBtn.disabled = true; rejectBtn.disabled = false;
+        });
+        rejectBtn && rejectBtn.addEventListener('click', function(){
+          itemEl.classList.remove('approved'); itemEl.classList.add('rejected');
+          rejectBtn.disabled = true; approveBtn.disabled = false;
+        });
+      });
+      // wire 'Approve All' button
+      const approveAllBtn = document.querySelector('.section-header .link-btn');
+      if(approveAllBtn) approveAllBtn.addEventListener('click', function(){
+        Array.from(listEl.querySelectorAll('.item')).forEach(itemEl=>{
+          const approveBtn = itemEl.querySelector('.circle.green');
+          const rejectBtn = itemEl.querySelector('.circle.red');
+          itemEl.classList.remove('rejected'); itemEl.classList.add('approved');
+          if(approveBtn) approveBtn.disabled = true; if(rejectBtn) rejectBtn.disabled = false;
+        });
+        if(window.computeBankBalance) try{ window.computeBankBalance(); }catch(e){}
+      });
+      // wire summary approve/reject pills
+      const summaryApprove = document.querySelector('.summary-actions .approve');
+      const summaryReject = document.querySelector('.summary-actions .reject');
+      if(summaryApprove) summaryApprove.addEventListener('click', ()=>{ document.querySelectorAll('.item').forEach(it=>{ it.classList.remove('rejected'); it.classList.add('approved'); }); });
+      if(summaryReject) summaryReject.addEventListener('click', ()=>{ document.querySelectorAll('.item').forEach(it=>{ it.classList.remove('approved'); it.classList.add('rejected'); }); });
+
+      // final initial net calc
+      recalcNet();
+      // include today's net into running bank if not yet included
+      try{ addDateNetToBank(date); }catch(e){}
+      // compute bank balance across saved records
+      if(window.computeBankBalance) try{ window.computeBankBalance(); }catch(e){}
+    }
+
+  }catch(e){ console.error('Failed to load manager record', e); listEl.innerHTML = '<div class="empty">Error loading records.</div>'; }
+})();
+</script>
+
+<script>
+// Director expenses save/load (stores under same records:YYYY-MM-DD key as manager)
+(function(){
+  function parseNum(v){ const n = parseFloat(v); return isNaN(n)?0:n; }
+  const date = new Date().toISOString().slice(0,10);
+  const key = 'records:' + date;
+
+  const rollsEl = document.getElementById('rolls-purchase');
+  const salaryEl = document.getElementById('staff-salary');
+  const vehicleEl = document.getElementById('vehicle-repair');
+  const otherEl = document.getElementById('other-operational');
+  const noteEl = document.getElementById('expenses-note');
+  const saveBtn = document.getElementById('save-director-expenses');
+  const clearBtn = document.getElementById('clear-director-expenses');
+
+  function load(){
+    try{
+      const raw = localStorage.getItem(key);
+      if(!raw) return;
+      const data = JSON.parse(raw);
+      const exp = data.expenditure || {};
+      if(rollsEl) rollsEl.value = exp.rollsPurchase || exp.rollsPurchase === 0 ? exp.rollsPurchase : '';
+      if(salaryEl) salaryEl.value = exp.salary || exp.salary === 0 ? exp.salary : '';
+      if(vehicleEl) vehicleEl.value = exp.vehicleRepair || exp.vehicleRepair === 0 ? exp.vehicleRepair : '';
+      if(otherEl) otherEl.value = exp.otherOperational || exp.otherOperational === 0 ? exp.otherOperational : '';
+      if(noteEl) noteEl.value = exp.notes || '';
+      if(window.recalcNetDirector) try{ window.recalcNetDirector(); }catch(e){}
+      if(window.computeBankBalance) try{ window.computeBankBalance(); }catch(e){}
+    }catch(e){ console.error('Failed to load director expenses', e); }
+  }
+
+  function save(){
+    try{
+      const raw = localStorage.getItem(key);
+      const data = raw ? JSON.parse(raw) : { expenditure:{}, sales:{} };
+      data.expenditure = data.expenditure || {};
+      data.expenditure.rollsPurchase = rollsEl && rollsEl.value ? rollsEl.value : '';
+      data.expenditure.salary = salaryEl && salaryEl.value ? salaryEl.value : '';
+      data.expenditure.vehicleRepair = vehicleEl && vehicleEl.value ? vehicleEl.value : '';
+      data.expenditure.otherOperational = otherEl && otherEl.value ? otherEl.value : '';
+      data.expenditure.notes = noteEl && noteEl.value ? noteEl.value : '';
+      localStorage.setItem(key, JSON.stringify(data));
+      alert('Director expenses saved for ' + date);
+      // recalc net and bank balance using shared functions if available
+      if(window.recalcNetDirector) try{ window.recalcNetDirector(); }catch(e){}
+      try{ addDateNetToBank(date); }catch(e){}
+      if(window.computeBankBalance) try{ window.computeBankBalance(); }catch(e){}
+    }catch(e){ console.error('Save failed', e); alert('Failed to save expenses'); }
+  }
+
+  function clearFields(){
+    if(rollsEl) rollsEl.value = '';
+    if(salaryEl) salaryEl.value = '';
+    if(vehicleEl) vehicleEl.value = '';
+    if(otherEl) otherEl.value = '';
+    if(noteEl) noteEl.value = '';
+    // also remove from stored record if present
+    try{
+      const raw = localStorage.getItem(key);
+      if(!raw) return;
+      const data = JSON.parse(raw);
+      if(data.expenditure){
+        delete data.expenditure.rollsPurchase;
+        delete data.expenditure.salary;
+        delete data.expenditure.vehicleRepair;
+        delete data.expenditure.otherOperational;
+        delete data.expenditure.notes;
+        localStorage.setItem(key, JSON.stringify(data));
+      }
+    }catch(e){ console.error('Clear save failed', e); }
+  }
+
+  if(saveBtn) saveBtn.addEventListener('click', save);
+  if(clearBtn) clearBtn.addEventListener('click', clearFields);
+  // load on open
+  load();
+})();
+</script>
+
+</body>
+</html>
