@@ -1,0 +1,64 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Login</title>
+  <link rel="stylesheet" href="signup.css" />
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600&display=swap" rel="stylesheet">
+</head>
+<body>
+
+  <div class="login-container">
+    <div class="logo">
+      <div class="logo-box">LAZMAY </div>
+    </div>
+
+    <h1>Welcome Back</h1>
+    <p class="subtitle">Sign in to access your dashboard securely</p>
+
+    <form>
+      <label>Username</label>
+      <div class="input-group">
+        <span class="icon">👤</span>
+        <input type="text" placeholder="Enter your username" />
+      </div>
+
+      <label>Password</label>
+      <div class="input-group">
+        <span class="icon">🔒</span>
+        <input type="password" id="password" placeholder="Enter your password" />
+        <span class="eye" onclick="togglePassword()">👁️</span>
+      </div>
+
+      <a href="#" class="forgot">Forgot Password?</a>
+
+      <button onclick="checkPassword()" id="passwords" type="button">Sign In</button>
+    </form>
+  </div>
+  <script>
+    function togglePassword() {
+      const input = document.getElementById("password");
+
+      if (input.type === "password") {
+        input.type = "text";
+      } else {
+        input.type = "password";
+      }
+    }
+    function checkPassword() {
+      const password = document.getElementById("password").value;
+
+      if (password === "9798010306" ) {
+        window.location.href = "manager.html";
+      } 
+      else if (password === "121212") {
+        window.location.href = "director.html"
+      }
+      else {
+        alert("Wrong password");
+      }
+    }
+  </script>
+</body>
+</html>
