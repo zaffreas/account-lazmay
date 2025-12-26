@@ -1,38 +1,34 @@
+
 <!DOCTYPE html>
 <html lang="en">
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
   <title>Director: Balances & Approvals</title>
-
   <!-- Google Fonts -->
   <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
   <link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined" rel="stylesheet">
-
   <link rel="stylesheet" href="director.css">
 </head>
-
 <body>
-
 <!-- HEADER -->
 <header class="top-bar">
   <button class="icon-btn">
     <span class="material-symbols-outlined">arrow_back</span>
   </button>
-
   <h1>Director: Balances & Approvals</h1>
-
   <button class="icon-btn">
     <span class="material-symbols-outlined">calendar_month</span>
   </button>
 </header>
-
+<!-- Date Strip (select day to view manager records) -->
+<section class="date-strip">
+  <div id="director-date-strip"></div>
+</section>
 <main class="container">
-
   <!-- SUMMARY CARD -->
   <section class="summary-card">
     <div class="summary-overlay"></div>
-
     <div class="summary-actions">
       <button class="pill reject">
         <span class="material-symbols-outlined">close</span> Reject
@@ -41,7 +37,6 @@
         <span class="material-symbols-outlined">check</span> Approve
       </button>
     </div>
-
     <div class="summary-info">
       <div>
         <p>Total Received from Manager</p>
@@ -56,26 +51,21 @@
       </div>
     </div>
   </section>
-
   <!-- MANAGER REPORT -->
   <section class="section">
     <div class="section-header">
       <h3>Manager Report</h3>
       <button class="link-btn">Approve All</button>
     </div>
-
     <input class="search" placeholder="Search items..." />
-
     <div class="list" id="manager-list">
       <!-- Manager items will be populated here from manager's saved record -->
       <div class="empty">No manager records for today.</div>
     </div>
   </section>
-
   <!-- EXPENSE FORM -->
   <section class="section">
     <h3>My Expenses</h3>
-
     <form class="card" id="director-expenses">
       <div class="row">
         <div>
@@ -87,7 +77,6 @@
           <input type="number" placeholder="0.00" id="staff-salary">
         </div>
       </div>
-
       <div class="row">
         <div>
           <label>Vehicle Repair</label>
@@ -98,14 +87,12 @@
           <input type="number" placeholder="0.00" id="other-operational">
         </div>
       </div>
-
       <div class="row">
         <div style="width:100%">
           <label>Notes (Optional)</label>
           <input type="text" placeholder="Details..." id="expenses-note">
         </div>
       </div>
-
       <div style="display:flex;gap:12px;margin-top:12px;">
         <button class="dashed-btn" type="button" id="save-director-expenses">
           <span class="material-symbols-outlined">save</span>
@@ -118,48 +105,61 @@
       </div>
     </form>
   </section>
-
 </main>
-
 <!-- FOOTER -->
     <footer class="bottom-bar">
   <div>
     <span>Net Balance</span>
     <strong id="net-balance">₦0.00</strong>
   </div>
-
   <button class="primary-btn">
     <span class="material-symbols-outlined">check_circle</span>
     Submit Review
   </button>
 </footer>
-
 <script>
 (function(){
+  // build 10-day date strip for director and persist selection in sessionStorage
+  const container = document.getElementById('director-date-strip');
+  if(!container) return;
+  const months = ['Jan','Feb','Mar','Apr','May','Jun','Jul','Aug','Sep','Oct','Nov','Dec'];
+  const days = ['Sun','Mon','Tue','Wed','Thu','Fri','Sat'];
+  const stored = sessionStorage.getItem('director:activeDate');
+  for(let i=0;i<10;i++){
+    const d = new Date(); d.setDate(d.getDate()-i);
+    const btn = document.createElement('button');
+    btn.className = 'date' + ( (stored ? stored === d.toISOString().slice(0,10) : i===0) ? ' active' : '');
+    btn.dataset.date = d.toISOString().slice(0,10);
+    const small = document.createElement('small'); small.textContent = i===0 ? 'Today' : days[d.getDay()];
+    const strong = document.createElement('strong'); strong.textContent = d.getDate();
+    const span = document.createElement('span'); span.textContent = months[d.getMonth()];
+    btn.appendChild(small); btn.appendChild(strong); btn.appendChild(span);
+    btn.addEventListener('click', ()=>{ sessionStorage.setItem('director:activeDate', btn.dataset.date); location.reload(); });
+    container.appendChild(btn);
+  }
+})();
+
+(function(){
   function parseNum(v){ const n = parseFloat(v); return isNaN(n)?0:n; }
-  const date = new Date().toISOString().slice(0,10);
-  const raw = localStorage.getItem('records:' + date);
+  const date = sessionStorage.getItem('director:activeDate') || new Date().toISOString().slice(0,10);
   const listEl = document.getElementById('manager-list');
   const totalEl = document.getElementById('total-received');
   if(!listEl || !totalEl) return;
-  if(!raw){
-    listEl.innerHTML = '<div class="empty">No manager records for ' + date + '.</div>';
-    return;
-  }
-  try{
-    const data = JSON.parse(raw);
+
+  function proceedWithRaw(raw){
+    if(!raw){ listEl.innerHTML = '<div class="empty">No manager records for ' + date + '.</div>'; return; }
+    try{
+      const data = JSON.parse(raw);
     const vehFuel = (data.expenditure && data.expenditure.vehFuel) || [];
     const vehOil = (data.expenditure && data.expenditure.vehOil) || [];
     const vehRep = (data.expenditure && data.expenditure.vehRepairs) || [];
     const gen = parseNum(data.expenditure && data.expenditure.generatorFuel);
     const sal = parseNum(data.expenditure && data.expenditure.salary);
     const miscAmount = parseNum(data.expenditure && data.expenditure.miscAmount);
-
     const salesAmt = (data.sales && data.sales.salesAmount) || [];
     const distBags = (data.sales && data.sales.distBags) || [];
     const distRate = (data.sales && data.sales.distRate) || [];
     const indAmt = (data.sales && data.sales.indAmount) || [];
-
     const items = [];
     for(let i=0;i<salesAmt.length;i++){
       const a = parseNum(salesAmt[i]); if(a!==0) items.push({title: 'Vehicle ' + (i+1) + ' Sales', amount: a, positive: true});
@@ -171,7 +171,6 @@
     for(let i=0;i<indAmt.length;i++){
       const a = parseNum(indAmt[i]); if(a!==0) items.push({title: 'Individuals ' + (i+1), amount: a, positive: true});
     }
-
     for(let i=0;i<Math.max(vehFuel.length, vehOil.length, vehRep.length); i++){
       const f = parseNum(vehFuel[i]); const o = parseNum(vehOil[i]); const r = parseNum(vehRep[i]);
       if(f!==0) items.push({title: 'Vehicle ' + (i+1) + ' Fuel', amount: -f, positive: false});
@@ -181,13 +180,14 @@
     if(gen!==0) items.push({title:'Generator Fuel', amount: -gen, positive:false});
     if(sal!==0) items.push({title:'Salary', amount: -sal, positive:false});
     if(miscAmount!==0) items.push({title:'Miscellaneous', amount: -miscAmount, positive:false});
-
+    // manager sales and manager expenses (positive = sales, negative = expenses)
     const salesTotal = items.filter(it=>it.positive).reduce((s,it)=> s + it.amount, 0);
     const expTotal = items.filter(it=>!it.positive).reduce((s,it)=> s + Math.abs(it.amount), 0);
-
-    // Total received from manager should be manager's total sales
-    totalEl.textContent = '₦' + salesTotal.toFixed(2);
-
+    // prefer backend-provided summary.balance when present; otherwise compute sales - expenses
+    let managerExpTotal = expTotal;
+    let managerBalance = (data.summary && typeof data.summary.balance !== 'undefined') ? parseNum(data.summary.balance) : (salesTotal - expTotal);
+    // display Total Received from Manager as manager's balance
+    totalEl.textContent = '₦' + managerBalance.toFixed(2);
     // function to recalc net balance (manager sales - director expenses)
     function recalcNet(){
       const rolls = parseNum((document.getElementById('rolls-purchase')||{value:''}).value);
@@ -195,97 +195,110 @@
       const vehicle = parseNum((document.getElementById('vehicle-repair')||{value:''}).value);
       const other = parseNum((document.getElementById('other-operational')||{value:''}).value);
       const dirExpSum = rolls + salary + vehicle + other;
-      const net = salesTotal - dirExpSum;
+      // net = manager's received amount minus director expenses
+      const net = managerBalance - dirExpSum;
       const netEl = document.getElementById('net-balance');
       if(netEl) netEl.textContent = '₦' + net.toFixed(2);
-      return {net, dirExpSum, salesTotal};
+      return {net, dirExpSum, managerBalance};
     }
-
     // expose for other scripts
     window.recalcNetDirector = recalcNet;
-    // initialize bank so it starts today and only accumulates new days
+    // Bank accumulation: add each day's net once by tracking last included date
+    const BASE_BANK_START = '2025-12-26';
     function ensureBankInitialized(forDate){
       try{
-        const start = localStorage.getItem('bank:startDate');
-        if(start) return;
-        // compute net for forDate (may be zero)
-        const key = 'records:' + forDate;
-        const raw = localStorage.getItem(key);
-        let salesTotal = 0; let dirExpSum = 0;
-        if(raw){
-          const d = JSON.parse(raw);
-          const salesAmt = (d.sales && d.sales.salesAmount) || [];
-          const distBags = (d.sales && d.sales.distBags) || [];
-          const distRate = (d.sales && d.sales.distRate) || [];
-          const indAmt = (d.sales && d.sales.indAmount) || [];
-          salesTotal += salesAmt.reduce((s,x)=> s + parseNum(x), 0);
-          for(let j=0;j<Math.max(distBags.length, distRate.length); j++) salesTotal += parseNum(distBags[j]) * parseNum(distRate[j]);
-          salesTotal += indAmt.reduce((s,x)=> s + parseNum(x), 0);
-
-          const exp = d.expenditure || {};
-          dirExpSum = parseNum(exp.rollsPurchase) + parseNum(exp.salary) + parseNum(exp.vehicleRepair) + parseNum(exp.otherOperational);
-          // mark this record as included
-          d.expenditure = d.expenditure || {};
-          d.expenditure.__bankIncluded = true;
-          localStorage.setItem(key, JSON.stringify(d));
+        if(!localStorage.getItem('bank:lastIncludedDate')){
+          localStorage.setItem('bank:lastIncludedDate', BASE_BANK_START);
         }
-        localStorage.setItem('bank:startDate', forDate);
-        localStorage.setItem('bank:running', String(salesTotal - dirExpSum));
+        if(!localStorage.getItem('bank:running')){
+          localStorage.setItem('bank:running', '0');
+        }
+        // ensure we've included up to forDate
+        addDateNetToBank(forDate);
       }catch(e){ console.error('ensureBankInitialized failed', e); }
     }
-
-    // add a specific date's net to running bank if not already included and date >= start
-    function addDateNetToBank(forDate){
+    function parseRecordNet(dstr){
       try{
-        const key = 'records:' + forDate;
+        const key = 'records:' + dstr;
         const raw = localStorage.getItem(key);
-        if(!raw) return;
-        const d = JSON.parse(raw);
-        d.expenditure = d.expenditure || {};
-        if(d.expenditure.__bankIncluded) return; // already counted
-        const start = localStorage.getItem('bank:startDate');
-        if(!start){
-          // initialize starting from this date
-          ensureBankInitialized(forDate);
-          return;
-        }
-        if(forDate < start) return; // only accumulate from startDate forward
-
-        const salesAmt = (d.sales && d.sales.salesAmount) || [];
-        const distBags = (d.sales && d.sales.distBags) || [];
-        const distRate = (d.sales && d.sales.distRate) || [];
-        const indAmt = (d.sales && d.sales.indAmount) || [];
+        if(!raw) return 0;
+        const rec = JSON.parse(raw);
+        // compute sales
+        const salesAmt = (rec.sales && rec.sales.salesAmount) || [];
+        const distBags = (rec.sales && rec.sales.distBags) || [];
+        const distRate = (rec.sales && rec.sales.distRate) || [];
+        const indAmt = (rec.sales && rec.sales.indAmount) || [];
         let salesTotal = 0;
         salesTotal += salesAmt.reduce((s,x)=> s + parseNum(x), 0);
         for(let j=0;j<Math.max(distBags.length, distRate.length); j++) salesTotal += parseNum(distBags[j]) * parseNum(distRate[j]);
         salesTotal += indAmt.reduce((s,x)=> s + parseNum(x), 0);
-
-        const exp = d.expenditure || {};
-        const dirExpSum = parseNum(exp.rollsPurchase) + parseNum(exp.salary) + parseNum(exp.vehicleRepair) + parseNum(exp.otherOperational);
-        const net = salesTotal - dirExpSum;
-
+        // manager expenses
+        const mExp = rec.expenditure || {};
+        const mFuels = (mExp.vehFuel || []).reduce((s,x)=> s + parseNum(x), 0);
+        const mOils = (mExp.vehOil || []).reduce((s,x)=> s + parseNum(x), 0);
+        const mReps = (mExp.vehRepairs || []).reduce((s,x)=> s + parseNum(x), 0);
+        const mGen = parseNum(mExp.generatorFuel);
+        const mSal = parseNum(mExp.salary);
+        const mMisc = parseNum(mExp.miscAmount);
+        const managerExpTotal = mFuels + mOils + mReps + mGen + mSal + mMisc;
+        const managerBalance = (rec.summary && typeof rec.summary.balance !== 'undefined') ? parseNum(rec.summary.balance) : (salesTotal - managerExpTotal);
+        // director expenses stored in same record
+        const dirExpSum = parseNum(mExp.rollsPurchase) + parseNum(mExp.salary) + parseNum(mExp.vehicleRepair) + parseNum(mExp.otherOperational);
+        return managerBalance - dirExpSum;
+      }catch(e){ return 0; }
+    }
+    function addDateNetToBank(forDate){
+      try{
+        const last = localStorage.getItem('bank:lastIncludedDate') || BASE_BANK_START;
+        // if forDate is earlier or equal, nothing to do
+        if(forDate <= last) return;
         let running = parseFloat(localStorage.getItem('bank:running') || '0');
-        running += net;
+        // iterate from the day after last up to forDate inclusive
+        let cur = new Date(last + 'T00:00:00');
+        cur.setDate(cur.getDate() + 1);
+        const end = new Date(forDate + 'T00:00:00');
+        let latestProcessed = last;
+        while(cur <= end){
+          const dstr = cur.toISOString().slice(0,10);
+          running += parseRecordNet(dstr);
+          latestProcessed = dstr;
+          cur.setDate(cur.getDate()+1);
+        }
         localStorage.setItem('bank:running', String(running));
-        d.expenditure.__bankIncluded = true;
-        localStorage.setItem(key, JSON.stringify(d));
+        localStorage.setItem('bank:lastIncludedDate', latestProcessed);
       }catch(e){ console.error('addDateNetToBank failed', e); }
     }
-
+    function recomputeBankFromBase(){
+      try{
+        let running = 0;
+        const start = new Date(BASE_BANK_START + 'T00:00:00');
+        start.setDate(start.getDate() + 1);
+        const today = new Date();
+        let latest = BASE_BANK_START;
+        for(let d = new Date(start); d <= today; d.setDate(d.getDate()+1)){
+          const dstr = d.toISOString().slice(0,10);
+          running += parseRecordNet(dstr);
+          latest = dstr;
+        }
+        localStorage.setItem('bank:running', String(running));
+        localStorage.setItem('bank:lastIncludedDate', latest);
+        return running;
+      }catch(e){ console.error('recomputeBankFromBase failed', e); return 0; }
+    }
     function computeBankBalance(){
       try{
+        const last = localStorage.getItem('bank:lastIncludedDate');
+        if(!last) recomputeBankFromBase();
         const running = parseFloat(localStorage.getItem('bank:running') || '0');
         const bankEl = document.getElementById('bank-balance'); if(bankEl) bankEl.textContent = '₦' + running.toFixed(2);
         return running;
       }catch(e){ console.error('computeBankBalance failed', e); return 0; }
     }
     window.computeBankBalance = computeBankBalance;
-
     // attach input listeners so director inputs update net live
     ['rolls-purchase','staff-salary','vehicle-repair','other-operational'].forEach(id=>{
       const el = document.getElementById(id); if(el) el.addEventListener('input', recalcNet);
     });
-
     // respond to storage changes (e.g., manager saved in another tab)
     window.addEventListener('storage', function(e){ if(e.key && e.key.startsWith('records:')){
       // reload page-level sales total by re-reading localStorage and calling recalc
@@ -298,18 +311,30 @@
         const newDistBags = (newData.sales && newData.sales.distBags) || [];
         const newDistRate = (newData.sales && newData.sales.distRate) || [];
         const newInd = (newData.sales && newData.sales.indAmount) || [];
+        // recompute manager sales and manager expenses from new data
         let newSalesTotal = 0;
         newSalesTotal += newVehicleSales.reduce((s,x)=> s + parseNum(x), 0);
         for(let i=0;i<Math.max(newDistBags.length, newDistRate.length); i++) newSalesTotal += parseNum(newDistBags[i]) * parseNum(newDistRate[i]);
         newSalesTotal += newInd.reduce((s,x)=> s + parseNum(x), 0);
-        totalEl.textContent = '₦' + newSalesTotal.toFixed(2);
+        const newExp = (newData.expenditure) || {};
+        const newFuels = (newExp.vehFuel || []).reduce((s,x)=> s + parseNum(x), 0);
+        const newOils = (newExp.vehOil || []).reduce((s,x)=> s + parseNum(x), 0);
+        const newReps = (newExp.vehRepairs || []).reduce((s,x)=> s + parseNum(x), 0);
+        const newGen = parseNum(newExp.generatorFuel);
+        const newSal = parseNum(newExp.salary);
+        const newMisc = parseNum(newExp.miscAmount);
+        const newExpTotal = newFuels + newOils + newReps + newGen + newSal + newMisc;
+        const newBalance = (newData.summary && typeof newData.summary.balance !== 'undefined') ? parseNum(newData.summary.balance) : (newSalesTotal - newExpTotal);
+        // update managerBalance/managerExpTotal and display manager balance as Total Received
+        managerBalance = newBalance;
+        managerExpTotal = newExpTotal;
+        totalEl.textContent = '₦' + managerBalance.toFixed(2);
         // ensure bank is updated if manager saved a new record for this date
         try{ addDateNetToBank(date); }catch(e){}
         // update items listing quickly by reloading page (simple strategy)
         location.reload();
       }catch(e){}
     }});
-
     if(items.length===0){
       listEl.innerHTML = '<div class="empty">No transactions recorded for ' + date + '.</div>';
       try{ ensureBankInitialized(date); if(window.computeBankBalance) window.computeBankBalance(); }catch(e){}
@@ -358,7 +383,6 @@
       const summaryReject = document.querySelector('.summary-actions .reject');
       if(summaryApprove) summaryApprove.addEventListener('click', ()=>{ document.querySelectorAll('.item').forEach(it=>{ it.classList.remove('rejected'); it.classList.add('approved'); }); });
       if(summaryReject) summaryReject.addEventListener('click', ()=>{ document.querySelectorAll('.item').forEach(it=>{ it.classList.remove('approved'); it.classList.add('rejected'); }); });
-
       // final initial net calc
       recalcNet();
       // include today's net into running bank if not yet included
@@ -366,18 +390,28 @@
       // compute bank balance across saved records
       if(window.computeBankBalance) try{ window.computeBankBalance(); }catch(e){}
     }
+    }catch(e){ console.error('Failed to load manager record', e); listEl.innerHTML = '<div class="empty">Error loading records.</div>'; }
+  }
 
-  }catch(e){ console.error('Failed to load manager record', e); listEl.innerHTML = '<div class="empty">Error loading records.</div>'; }
+  // try backend first, then fallback to localStorage
+  fetch('/records/' + date).then(function(r){
+    if(r.ok) return r.json();
+    throw new Error('no-server');
+  }).then(function(json){
+    proceedWithRaw(JSON.stringify(json));
+  }).catch(function(){
+    const raw = localStorage.getItem('records:' + date);
+    proceedWithRaw(raw);
+  });
+
 })();
 </script>
-
 <script>
 // Director expenses save/load (stores under same records:YYYY-MM-DD key as manager)
 (function(){
   function parseNum(v){ const n = parseFloat(v); return isNaN(n)?0:n; }
-  const date = new Date().toISOString().slice(0,10);
+  const date = sessionStorage.getItem('director:activeDate') || new Date().toISOString().slice(0,10);
   const key = 'records:' + date;
-
   const rollsEl = document.getElementById('rolls-purchase');
   const salaryEl = document.getElementById('staff-salary');
   const vehicleEl = document.getElementById('vehicle-repair');
@@ -385,7 +419,6 @@
   const noteEl = document.getElementById('expenses-note');
   const saveBtn = document.getElementById('save-director-expenses');
   const clearBtn = document.getElementById('clear-director-expenses');
-
   function load(){
     try{
       const raw = localStorage.getItem(key);
@@ -401,7 +434,6 @@
       if(window.computeBankBalance) try{ window.computeBankBalance(); }catch(e){}
     }catch(e){ console.error('Failed to load director expenses', e); }
   }
-
   function save(){
     try{
       const raw = localStorage.getItem(key);
@@ -420,7 +452,6 @@
       if(window.computeBankBalance) try{ window.computeBankBalance(); }catch(e){}
     }catch(e){ console.error('Save failed', e); alert('Failed to save expenses'); }
   }
-
   function clearFields(){
     if(rollsEl) rollsEl.value = '';
     if(salaryEl) salaryEl.value = '';
@@ -442,13 +473,11 @@
       }
     }catch(e){ console.error('Clear save failed', e); }
   }
-
   if(saveBtn) saveBtn.addEventListener('click', save);
   if(clearBtn) clearBtn.addEventListener('click', clearFields);
   // load on open
   load();
 })();
 </script>
-
 </body>
 </html>
