@@ -1,41 +1,34 @@
+
 <!DOCTYPE html>
 <html lang="en">
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
   <title>Manager Dashboard</title>
-
   <link href="https://fonts.googleapis.com/css2?family=Manrope:wght@400;600;700&display=swap" rel="stylesheet">
   <link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined" rel="stylesheet">
   <link rel="stylesheet" href="manager.css">
 </head>
-
 <body>
 <div class="app">
-
   <!-- Top Bar -->
   <header class="top-bar">
     <span class="material-symbols-outlined">menu</span>
     <h1>Manager Dashboard</h1>
     <span class="material-symbols-outlined">notifications</span>
   </header>
-
   <!-- Date Strip -->
   <section class="date-strip">
     <div id="date-strip"></div>
   </section>
-
   <!-- Tabs -->
   <section class="tabs">
     <button class="tab active">Expenditure</button>
     <button class="tab">Sales</button>
   </section>
-
   <!-- Content -->
   <main id="expenditure-content" class="content">
-
     <h2>Vehicle Expenses</h2>
-
     <!-- Six collapsible vehicle sections -->
     <details open>
       <summary>
@@ -57,7 +50,6 @@
         </div>
       </div>
     </details>
-
     <details>
       <summary>
         <span class="material-symbols-outlined">v</span>
@@ -78,7 +70,6 @@
         </div>
       </div>
     </details>
-
     <details>
       <summary>
         <span class="material-symbols-outlined">v</span>
@@ -99,7 +90,6 @@
         </div>
       </div>
     </details>
-
     <details>
       <summary>
         <span class="material-symbols-outlined">v</span>
@@ -120,7 +110,6 @@
         </div>
       </div>
     </details>
-
     <details>
       <summary>
         <span class="material-symbols-outlined">v</span>
@@ -141,7 +130,6 @@
         </div>
       </div>
     </details>
-
     <details>
       <summary>
         <span class="material-symbols-outlined">v</span>
@@ -162,30 +150,22 @@
         </div>
       </div>
     </details>
-
     <h2>Operational Expenses</h2>
-
     <div class="row">
       <span>Generator Fuel</span>
       <input type="number" placeholder="0.00" id="generator-fuel">
     </div>
-
     <div class="row">
       <span>Salary</span>
       <input type="number" placeholder="0.00" id="salary">
     </div>
-
     <h2>Miscellaneous</h2>
-
     <textarea id="misc-desc" placeholder="Describe other expenses..."></textarea>
     <input type="number" placeholder="Amount" id="misc-amount">
-
   </main>
-
     <!-- Sales Content (hidden by default) -->
     <main id="sales-content" class="content" style="display:none">
       <h2>Vehicle Sales</h2>
-
       <!-- Six collapsible vehicle sales sections -->
       <details open>
         <summary>
@@ -203,7 +183,6 @@
           </div>
         </div>
       </details>
-
       <details>
         <summary>
           <span class="material-symbols-outlined">v</span>
@@ -220,7 +199,6 @@
           </div>
         </div>
       </details>
-
       <details>
         <summary>
           <span class="material-symbols-outlined">v</span>
@@ -237,7 +215,6 @@
           </div>
         </div>
       </details>
-
       <details>
         <summary>
           <span class="material-symbols-outlined">v</span>
@@ -254,7 +231,6 @@
           </div>
         </div>
       </details>
-
       <details>
         <summary>
           <span class="material-symbols-outlined">v</span>
@@ -271,7 +247,6 @@
           </div>
         </div>
       </details>
-
       <details>
         <summary>
           <span class="material-symbols-outlined">v</span>
@@ -288,9 +263,7 @@
           </div>
         </div>
       </details>
-
       <h2>Other Sales</h2>
-
       <!-- Distributors 1..3 -->
       <details>
         <summary>
@@ -308,7 +281,6 @@
           </div>
         </div>
       </details>
-
       <details>
         <summary>
           <span class="material-symbols-outlined">v</span>
@@ -325,7 +297,6 @@
           </div>
         </div>
       </details>
-
       <details>
         <summary>
           <span class="material-symbols-outlined">v</span>
@@ -342,7 +313,6 @@
           </div>
         </div>
       </details>
-
       <h2>Individuals</h2>
       <details>
         <summary>
@@ -360,9 +330,7 @@
           </div>
         </div>
       </details>
-
     </main>
-
     <!-- Footer -->
   <footer class="footer">
     <div>
@@ -375,7 +343,6 @@
     </div>
     <button class="save">Save Record</button>
   </footer>
-
 </div>
 <script>
 (function(){
@@ -406,14 +373,12 @@
 (function(){
   function parseVal(el){ if(!el) return 0; const v = parseFloat(el.value); return isNaN(v)?0:v; }
   function sum(selector){ return Array.from(document.querySelectorAll(selector)).reduce((s,el)=> s + parseVal(el), 0); }
-
   function updateTotal(){
     const salesVisible = document.getElementById('sales-content') && getComputedStyle(document.getElementById('sales-content')).display !== 'none';
     const out = document.getElementById('total-amount');
     const label = document.getElementById('total-label');
     const balEl = document.getElementById('balance-amount');
     if(!out) return;
-
     // Expenditure total
     const fuels = sum('.veh-fuel');
     const oils = sum('.veh-oil');
@@ -422,7 +387,6 @@
     const sal = parseVal(document.getElementById('salary'));
     const misc = parseVal(document.getElementById('misc-amount'));
     const expenditureTotal = fuels + oils + repairs + gen + sal + misc;
-
     // Sales total
     const vehicleSales = sum('.sales-amount');
     const distBags = Array.from(document.querySelectorAll('.dist-bags'));
@@ -435,20 +399,16 @@
     }
     const indTotal = sum('.ind-amount');
     const salesTotal = vehicleSales + distTotal + indTotal;
-
     // show correct main total depending on view
     if(label) label.textContent = salesVisible ? 'Total Sales' : 'Total Expenditure';
     out.textContent = '₦' + (salesVisible ? salesTotal : expenditureTotal).toFixed(2);
-
     // balance = sales - expenditure (visible always)
     if(balEl) balEl.textContent = '₦' + (salesTotal - expenditureTotal).toFixed(2);
   }
-
   // wire inputs
   const expInputs = Array.from(document.querySelectorAll('.veh-fuel, .veh-oil, .veh-repairs, #generator-fuel, #salary, #misc-amount'));
   const salesInputs = Array.from(document.querySelectorAll('.sales-amount, .sales-bags, .dist-bags, .dist-rate, .ind-amount'));
   expInputs.concat(salesInputs).forEach(i=> i && i.addEventListener('input', updateTotal));
-
   // tab switching
   const tabs = document.querySelectorAll('.tabs .tab');
   const expEl = document.getElementById('expenditure-content');
@@ -470,24 +430,28 @@
   const activeTab = document.querySelector('.tabs .tab.active');
   showTab(activeTab ? activeTab.textContent.trim().toLowerCase() : 'expenditure');
   updateTotal();
-
   // --- Date selection and save/load per date ---
   const dateButtons = Array.from(document.querySelectorAll('.date-strip .date'));
   function setActiveDate(btn){ dateButtons.forEach(b=> b.classList.toggle('active', b===btn)); }
   function getActiveDate(){ const a = dateButtons.find(b=> b.classList.contains('active')); return a ? a.dataset.date : (new Date()).toISOString().slice(0,10); }
-
   function clearInputs(){
     Array.from(document.querySelectorAll('.veh-fuel, .veh-oil, .veh-repairs, #generator-fuel, #salary, #misc-amount, .sales-amount, .sales-bags, .dist-bags, .dist-rate, .ind-amount, .ind-bags')).forEach(el=> el && (el.value=''));
     const ta = document.getElementById('misc-desc'); if(ta) ta.value = '';
   }
-
   function loadData(date){
     if(!date) return;
     const key = 'records:' + date;
-    const raw = localStorage.getItem(key);
-    if(!raw){ clearInputs(); updateTotal(); return; }
-    try{
-      const data = JSON.parse(raw);
+    // try backend first (relative so it works on Render)
+    fetch('/records/' + date).then(function(res){
+      if(res.ok) return res.json();
+      throw new Error('no-server');
+    }).then(function(data){
+      applyDataToForm(data);
+    }).catch(function(){
+      const raw = localStorage.getItem(key);
+      if(!raw){ clearInputs(); updateTotal(); return; }
+      try{
+        const data = JSON.parse(raw);
       Array.from(document.querySelectorAll('.veh-fuel')).forEach((el,i)=> el.value = (data.expenditure && data.expenditure.vehFuel && data.expenditure.vehFuel[i]) || '');
       Array.from(document.querySelectorAll('.veh-oil')).forEach((el,i)=> el.value = (data.expenditure && data.expenditure.vehOil && data.expenditure.vehOil[i]) || '');
       Array.from(document.querySelectorAll('.veh-repairs')).forEach((el,i)=> el.value = (data.expenditure && data.expenditure.vehRepairs && data.expenditure.vehRepairs[i]) || '');
@@ -495,18 +459,33 @@
       const sal = document.getElementById('salary'); if(sal) sal.value = (data.expenditure && data.expenditure.salary) || '';
       const misc = document.getElementById('misc-amount'); if(misc) misc.value = (data.expenditure && data.expenditure.miscAmount) || '';
       const ta = document.getElementById('misc-desc'); if(ta) ta.value = (data.expenditure && data.expenditure.miscDesc) || '';
-
       Array.from(document.querySelectorAll('.sales-bags')).forEach((el,i)=> el.value = (data.sales && data.sales.salesBags && data.sales.salesBags[i]) || '');
       Array.from(document.querySelectorAll('.sales-amount')).forEach((el,i)=> el.value = (data.sales && data.sales.salesAmount && data.sales.salesAmount[i]) || '');
       Array.from(document.querySelectorAll('.dist-bags')).forEach((el,i)=> el.value = (data.sales && data.sales.distBags && data.sales.distBags[i]) || '');
       Array.from(document.querySelectorAll('.dist-rate')).forEach((el,i)=> el.value = (data.sales && data.sales.distRate && data.sales.distRate[i]) || '');
       Array.from(document.querySelectorAll('.ind-bags')).forEach((el,i)=> el.value = (data.sales && data.sales.indBags && data.sales.indBags[i]) || '');
       Array.from(document.querySelectorAll('.ind-amount')).forEach((el,i)=> el.value = (data.sales && data.sales.indAmount && data.sales.indAmount[i]) || '');
-
-    }catch(e){ console.error('Failed to parse saved data for', date, e); clearInputs(); }
-    updateTotal();
+      }catch(e){ console.error('Failed to parse saved data for', date, e); clearInputs(); }
+      updateTotal();
+    });
   }
 
+  function applyDataToForm(data){
+    Array.from(document.querySelectorAll('.veh-fuel')).forEach((el,i)=> el.value = (data.expenditure && data.expenditure.vehFuel && data.expenditure.vehFuel[i]) || '');
+    Array.from(document.querySelectorAll('.veh-oil')).forEach((el,i)=> el.value = (data.expenditure && data.expenditure.vehOil && data.expenditure.vehOil[i]) || '');
+    Array.from(document.querySelectorAll('.veh-repairs')).forEach((el,i)=> el.value = (data.expenditure && data.expenditure.vehRepairs && data.expenditure.vehRepairs[i]) || '');
+    const gen = document.getElementById('generator-fuel'); if(gen) gen.value = (data.expenditure && data.expenditure.generatorFuel) || '';
+    const sal = document.getElementById('salary'); if(sal) sal.value = (data.expenditure && data.expenditure.salary) || '';
+    const misc = document.getElementById('misc-amount'); if(misc) misc.value = (data.expenditure && data.expenditure.miscAmount) || '';
+    const ta = document.getElementById('misc-desc'); if(ta) ta.value = (data.expenditure && data.expenditure.miscDesc) || '';
+    Array.from(document.querySelectorAll('.sales-bags')).forEach((el,i)=> el.value = (data.sales && data.sales.salesBags && data.sales.salesBags[i]) || '');
+    Array.from(document.querySelectorAll('.sales-amount')).forEach((el,i)=> el.value = (data.sales && data.sales.salesAmount && data.sales.salesAmount[i]) || '');
+    Array.from(document.querySelectorAll('.dist-bags')).forEach((el,i)=> el.value = (data.sales && data.sales.distBags && data.sales.distBags[i]) || '');
+    Array.from(document.querySelectorAll('.dist-rate')).forEach((el,i)=> el.value = (data.sales && data.sales.distRate && data.sales.distRate[i]) || '');
+    Array.from(document.querySelectorAll('.ind-bags')).forEach((el,i)=> el.value = (data.sales && data.sales.indBags && data.sales.indBags[i]) || '');
+    Array.from(document.querySelectorAll('.ind-amount')).forEach((el,i)=> el.value = (data.sales && data.sales.indAmount && data.sales.indAmount[i]) || '');
+    updateTotal();
+  }
   function saveData(date){
     if(!date) return;
     const data = { expenditure: {}, sales: {} };
@@ -517,25 +496,49 @@
     data.expenditure.salary = (document.getElementById('salary')||{value:''}).value || '';
     data.expenditure.miscAmount = (document.getElementById('misc-amount')||{value:''}).value || '';
     data.expenditure.miscDesc = (document.getElementById('misc-desc')||{value:''}).value || '';
-
     data.sales.salesBags = Array.from(document.querySelectorAll('.sales-bags')).map(el=> el.value || '');
     data.sales.salesAmount = Array.from(document.querySelectorAll('.sales-amount')).map(el=> el.value || '');
     data.sales.distBags = Array.from(document.querySelectorAll('.dist-bags')).map(el=> el.value || '');
     data.sales.distRate = Array.from(document.querySelectorAll('.dist-rate')).map(el=> el.value || '');
     data.sales.indBags = Array.from(document.querySelectorAll('.ind-bags')).map(el=> el.value || '');
     data.sales.indAmount = Array.from(document.querySelectorAll('.ind-amount')).map(el=> el.value || '');
-
-    try{ localStorage.setItem('records:' + date, JSON.stringify(data)); alert('Saved data for ' + date); }
-    catch(e){ console.error('Save failed', e); alert('Failed to save'); }
+    // compute summary totals so other pages can read an exact manager balance
+    try{
+      function parseNum(v){ const n = parseFloat(v); return isNaN(n)?0:n; }
+      const fuels = data.expenditure.vehFuel.reduce((s,x)=> s + parseNum(x), 0);
+      const oils = data.expenditure.vehOil.reduce((s,x)=> s + parseNum(x), 0);
+      const repairs = data.expenditure.vehRepairs.reduce((s,x)=> s + parseNum(x), 0);
+      const gen = parseNum(data.expenditure.generatorFuel);
+      const sal = parseNum(data.expenditure.salary);
+      const misc = parseNum(data.expenditure.miscAmount);
+      const expenditureTotal = fuels + oils + repairs + gen + sal + misc;
+      const vehicleSales = data.sales.salesAmount.reduce((s,x)=> s + parseNum(x), 0);
+      let distTotal = 0;
+      for(let i=0;i<Math.max(data.sales.distBags.length, data.sales.distRate.length); i++){
+        const b = parseNum(data.sales.distBags[i]); const r = parseNum(data.sales.distRate[i]); distTotal += b * r;
+      }
+      const indTotal = data.sales.indAmount.reduce((s,x)=> s + parseNum(x), 0);
+      const salesTotal = vehicleSales + distTotal + indTotal;
+      data.summary = { salesTotal: salesTotal, expenditureTotal: expenditureTotal, balance: salesTotal - expenditureTotal };
+      // try sending to backend (relative URL for deployed host)
+      fetch('/records/' + date, {
+        method: 'POST', headers: {'Content-Type':'application/json'}, body: JSON.stringify(data)
+      }).then(function(res){
+        if(res.ok){ alert('Saved data to server for ' + date); return; }
+        // fallback
+        localStorage.setItem('records:' + date, JSON.stringify(data));
+        alert('Saved data locally for ' + date);
+      }).catch(function(){
+        localStorage.setItem('records:' + date, JSON.stringify(data));
+        alert('Saved data locally for ' + date);
+      });
+    }catch(e){ console.error('Save failed', e); alert('Failed to save'); }
   }
-
   // wire date buttons
   dateButtons.forEach(btn=> btn.addEventListener('click', ()=>{ setActiveDate(btn); loadData(btn.dataset.date); }));
-
   // initialize load for active date (or first)
   const activeDateBtn = dateButtons.find(b=> b.classList.contains('active')) || dateButtons[0];
   if(activeDateBtn){ setActiveDate(activeDateBtn); loadData(activeDateBtn.dataset.date); }
-
   // save button
   const saveBtn = document.querySelector('button.save');
   if(saveBtn) saveBtn.addEventListener('click', ()=>{ const date = getActiveDate(); if(date) saveData(date); });
